@@ -1,0 +1,25 @@
+[Unit]
+Description=Akka node %i
+
+[Service]
+TimeoutStartSec=0
+EnvironmentFile=/etc/environment
+
+ExecStartPre=-/usr/bin/docker kill akka-node-%i
+ExecStartPre=-/usr/bin/docker rm akka-node-%i
+ExecStartPre=/usr/bin/docker pull tlipinski/akka-cluster-on-coreos
+
+ExecStart=/usr/bin/docker run \
+  --rm \
+  --name akka-node-%i \
+  --hostname akka-node-%i \
+  -p ${COREOS_PUBLIC_IPV4}:2550:2550 \
+  tlipinski/akka-cluster-on-coreos \
+  -Dakka.remote.netty.tcp.hostname=akka-node-%i \
+  -Dakka.remote.netty.tcp.port=2550 \
+  -Dakka.cluster.seed-nodes.0=akka.tcp://default@akka-node-%i:2550
+
+ExecStop=/usr/bin/docker rm akka-node@%i.service
+
+[X-Fleet]
+Conflicts=akka-node@%i.service
