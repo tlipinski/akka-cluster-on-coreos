@@ -21,11 +21,12 @@ dockerfile in docker := {
   new Dockerfile {
     from("java:8")
     add(artifact, artifactTargetPath)
-    expose(2552)
-    entryPoint("java", "-jar", artifactTargetPath)
+    add(file(".") / "docker/run.sh", "/run.sh")
+    expose(2550)
+    entryPoint("./run.sh", artifactTargetPath)
   }
 }
 
 imageNames in docker := Seq(
-  ImageName("tlipinski/coreos-cluster")
+  ImageName("tlipinski/akka-on-coreos-cluster")
 )
