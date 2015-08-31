@@ -1,0 +1,15 @@
+[Unit]
+Description=SkyDNS Global
+
+[Service]
+ExecStartPre=-/usr/bin/docker kill skydns
+ExecStartPre=-/usr/bin/docker rm skydns
+ExecStart=/usr/bin/docker run \
+  --name skydns \
+  --net host \
+  skynetservices/skydns
+
+ExecStop=/usr/bin/docker rm skydns
+
+[X-Fleet]
+Global=true
