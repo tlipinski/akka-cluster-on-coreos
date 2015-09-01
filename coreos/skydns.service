@@ -2,12 +2,13 @@
 Description=SkyDNS Global
 
 [Service]
+EnvironmentFile=/etc/environment
 ExecStartPre=-/usr/bin/docker kill skydns
 ExecStartPre=-/usr/bin/docker rm skydns
 ExecStart=/usr/bin/docker run \
   --name skydns \
   --net host \
-  skynetservices/skydns
+  skynetservices/skydns -addr ${COREOS_PUBLIC_IPV4}:53
 
 ExecStop=/usr/bin/docker rm skydns
 
