@@ -13,16 +13,19 @@ ExecStart=/usr/bin/docker run \
   --rm \
   --name akka-node-%i \
   --hostname akka-node-%i \
-  --dns=${COREOS_PUBLIC_IPV4} \
-  --dns-search=skydns.local \
   -p ${COREOS_PUBLIC_IPV4}:2550:2550 \
   tlipinski/akka-cluster-on-coreos \
   -Dakka.remote.netty.tcp.hostname=akka-node-%i \
   -Dakka.remote.netty.tcp.port=2550 \
-  -Dakka.cluster.seed-nodes.0=akka.tcp://default@akka-node-1:2550
+  -Dakka.cluster.seed-nodes.0=akka.tcp://default@akka-node-%i:2550
+
+ExecStartPost=/bin/bash -c '\
+  while true; do \
+    etcdctl set /skydns/local/skydns/akka-node-%i \'{"host": "${COREOS_PUBLIC_IPV4}"}\' --ttl 30; \
+    sleep 20; \
+  done'
 
 ExecStop=/usr/bin/docker rm akka-node@%i.service
 
 [X-Fleet]
-Conflicts=akka-node@*.service
-Conflicts=akka-seed-node@*.service
+Conflicts=akka-node@%i.service
